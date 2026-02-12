@@ -1,10 +1,9 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer
 from app.database import Base
 
-class CinemaHall(Base):
-    __tablename__ = "cinema_halls"
+class Hall(Base):
+    __tablename__ = "halls"
 
     id = Column(Integer, primary_key=True)
-    name = Column(String, nullable=False)
     rows = Column(Integer, nullable=False)
-    cols = Column(Integer, nullable=False)
+    seats_per_row = Column(Integer, nullable=False)

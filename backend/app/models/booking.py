@@ -1,13 +1,17 @@
-from datetime import datetime, timedelta
+from sqlalchemy import Column, Integer, ForeignKey, String, DateTime, UniqueConstraint
+from datetime import datetime
+from app.database import Base
 
-def hold_seat(db, seat_id, showtime_id):
-    expires = datetime.utcnow() + timedelta(minutes=10)
+class Booking(Base):
+    __tablename__ = "bookings"
 
-    ticket = Ticket(
-        seat_id=seat_id,
-        showtime_id=showtime_id,
-        status="HELD",
-        expires_at=expires
+    id = Column(Integer, primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    showtime_id = Column(Integer, ForeignKey("showtimes.id"))
+    seat_id = Column(Integer, ForeignKey("seats.id"))
+    status = Column(String, default="HELD")
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    __table_args__ = (
+        UniqueConstraint("showtime_id", "seat_id"),
     )
-    db.add(ticket)
-    db.commit()

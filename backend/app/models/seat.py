@@ -8,7 +8,6 @@ class Seat(Base):
     hall_id = Column(Integer, ForeignKey("halls.id"))
     row = Column(Integer)
     number = Column(Integer)
+    type = Column(String, default="standard")  # new
 
-    __table_args__ = (
-        UniqueConstraint("hall_id", "row", "number"),
-    )
+    hall = relationship("Hall", back_populates="seats")

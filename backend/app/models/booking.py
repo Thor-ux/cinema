@@ -6,12 +6,7 @@ class Booking(Base):
     __tablename__ = "bookings"
 
     id = Column(Integer, primary_key=True)
-    user_id = Column(Integer, ForeignKey("users.id"))
-    showtime_id = Column(Integer, ForeignKey("showtimes.id"))
-    seat_id = Column(Integer, ForeignKey("seats.id"))
-    status = Column(String, default="HELD")
+    booking_code = Column(String, unique=True, index=True)  
     created_at = Column(DateTime, default=datetime.utcnow)
 
-    __table_args__ = (
-        UniqueConstraint("showtime_id", "seat_id"),
-    )
+    tickets = relationship("Ticket", back_populates="booking")

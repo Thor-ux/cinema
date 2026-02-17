@@ -9,3 +9,6 @@ class Showtime(Base):
     hall_id = Column(Integer, ForeignKey("halls.id"))
     start_time = Column(DateTime)
     price = Column(Float)
+
+    movie = relationship("Movie")
+    hall = relationship("Hall")

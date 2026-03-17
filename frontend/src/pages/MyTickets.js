@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import api from "../api";
+import { apiFetch } from "../api";
 
 export default function MyTickets() {
   const [tickets, setTickets] = useState([]);
 
   useEffect(() => {
-    api.get("/tickets/me")
+    apiFetch("/tickets/me")
       .then(res => setTickets(res.data))
       .catch(() => alert("Failed to load tickets"));
   }, []);

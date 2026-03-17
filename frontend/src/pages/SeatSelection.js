@@ -1,51 +1,67 @@
 import { useEffect, useState } from "react";
+import { apiFetch } from "../api";
 import { useParams } from "react-router-dom";
-import api from "../api";
 
 export default function SeatSelection() {
-  const { showtimeId } = useParams();
+  const { sessionId } = useParams();
+
   const [seats, setSeats] = useState([]);
-  const [selected, setSelected] = useState([]);
+  const [selectedSeat, setSelectedSeat] = useState(null);
 
   useEffect(() => {
-    api.get(`/showtimes/${showtimeId}/seats`)
-      .then(res => setSeats(res.data));
-  }, [showtimeId]);
+    apiFetch(`/sessions/${sessionId}/seats`)
+      .then(setSeats)
+      .catch(err => alert(err.message));
+  }, [sessionId]);
 
-  const toggleSeat = (seatId) => {
-    setSelected(prev =>
-      prev.includes(seatId)
-        ? prev.filter(id => id !== seatId)
-        : [...prev, seatId]
-    );
-  };
+  const handleBooking = async () => {
+    if (!selectedSeat) {
+      alert("Select a seat first");
+      return;
+    }
 
-  const bookSeats = async () => {
-    await api.post("/bookings", {
-      showtime_id: showtimeId,
-      seat_ids: selected
-    });
+    try {
+      await apiFetch("/bookings", {
+        method: "POST",
+        body: JSON.stringify({
+          session_id: sessionId,
+          seat_id: selectedSeat,
+        }),
+      });
 
-    alert("Booking successful!");
+      alert("Booking successful 🎟");
+    } catch (err) {
+      alert(err.message);
+    }
   };
 
   return (
     <div>
-      <h2>Select Seats</h2>
-      <div>
+      <h2>Select Seat</h2>
+
+      <div style={{ display: "flex", flexWrap: "wrap", maxWidth: "300px" }}>
         {seats.map(seat => (
           <button
             key={seat.id}
             disabled={seat.is_booked}
-            onClick={() => toggleSeat(seat.id)}
+            onClick={() => setSelectedSeat(seat.id)}
+            style={{
+              margin: "5px",
+              background:
+                seat.id === selectedSeat
+                  ? "green"
+                  : seat.is_booked
+                  ? "gray"
+                  : "white",
+            }}
           >
             {seat.number}
           </button>
         ))}
       </div>
 
-      <button onClick={bookSeats}>
-        Confirm Booking
+      <button onClick={handleBooking} style={{ marginTop: "20px" }}>
+        Book Seat
       </button>
     </div>
   );

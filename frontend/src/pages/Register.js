@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../api";
+import { apiFetch } from "../api";
 
 export default function Register() {
   const navigate = useNavigate();
@@ -21,7 +21,7 @@ export default function Register() {
     e.preventDefault();
 
     try {
-      await api.post("/auth/register", form);
+      await apiFetch("/auth/register", form);
       alert("Registration successful. Please login.");
       navigate("/login");
     } catch (err) {

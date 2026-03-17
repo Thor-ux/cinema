@@ -1,5 +1,5 @@
 import { useState, useContext } from "react";
-import api from "../api";
+import { apiFetch} from "../api";
 import { AuthContext } from "../auth/AuthContext";
 import { useNavigate } from "react-router-dom";
 
@@ -11,7 +11,7 @@ export default function Login() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const response = await api.post("/auth/login", {
+    const response = await apiFetch("/auth/login", {
       email,
       password,
     });

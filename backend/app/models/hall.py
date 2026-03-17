@@ -1,13 +1,12 @@
-from sqlalchemy import Column, Integer
+from sqlalchemy import Column, Integer, String, Boolean
 from app.database import Base
 
-class Hall(Base):
+class CinemaHall(Base):
+
     __tablename__ = "halls"
 
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String, unique=True, nullable=False) # new
-    rows = Column(Integer, nullable=False)
-    seats_per_row = Column(Integer, nullable=False)
-    is_active = Column(Boolean, default=True) # new
-
-    seats = relationship("Seat", back_populates="hall", cascade="all, delete")
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+    rows = Column(Integer)
+    seats_per_row = Column(Integer)
+    is_active = Column(Boolean, default=True)

@@ -1,19 +1,70 @@
-from sqlalchemy.exc import IntegrityError
+import uuid
 from fastapi import HTTPException
-from app.models.booking import Booking
+from sqlalchemy import and_
 
-def reserve_seat(db, showtime_id, seat_id, user_id):
-    booking = Booking(
-        user_id=user_id,
-        showtime_id=showtime_id,
-        seat_id=seat_id,
+from app.models.booking import Booking
+from app.models.ticket import Ticket
+from app.models.seat import Seat
+from app.utils.qr import generate_qr
+
+
+def create_booking(db, data):
+
+    seats = (
+        db.query(Seat)
+        .filter(Seat.id.in_(data.seat_ids))
+        .with_for_update()
+        .all()
     )
 
-    try:
-        db.add(booking)
-        db.commit()
-        db.refresh(booking)
-        return booking
-    except IntegrityError:
-        db.rollback()
-        raise HTTPException(status_code=400, detail="Seat already booked")
+    if len(seats) != len(data.seat_ids):
+        raise HTTPException(status_code=404, detail="Some seats not found")
+    
+    existing = (
+        db.query(Ticket.seat_id)
+        .join(Booking)
+        .filter(
+            Booking.session_id == data.session_id,
+            Ticket.seat_id.in_(data.seat_ids)
+        )
+        .all()
+    )
+
+    if existing:
+        raise HTTPException(status_code=400, detail="Some seats already booked")
+
+    booking_code = str(uuid.uuid4())[:8]
+
+    booking = Booking(
+        session_id=data.session_id,
+        customer_name=data.customer_name,
+        booking_code=booking_code
+    )
+
+    db.add(booking)
+    db.flush()
+
+    tickets = []
+
+    for seat in seats:
+        qr_content = f"""
+BOOKING:{booking_code}
+SESSION:{data.session_id}
+ROW:{getattr(seat, 'row', 'N/A')}
+SEAT:{seat.number}
+        """
+
+        qr = generate_qr(qr_content)
+
+        ticket = Ticket(
+            booking_id=booking.id,
+            seat_id=seat.id,
+            qr_code=qr
+        )
+
+        db.add(ticket)
+        tickets.append(ticket)
+
+    db.commit()
+
+    return tickets

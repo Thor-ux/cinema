@@ -1,15 +1,14 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import api from "../api";
+import { apiFetch } from "../api";
 
 export default function Showtime() {
   const { movieId } = useParams();
-  const [showtimes, setShowtime] = useState([]);
+  const [sessions, setSessions] = useState([]);
 
   useEffect(() => {
-    api
-      .get(`/movies/${movieId}/showtime`)
-      .then((res) => setShowtimes(res.data))
+    apiFetch(`/sessions/${movieId}`)
+      .then(setSessions(res.data))
       .catch(() => alert("Failed to load showtimes"));
   }, [movieId]);
 
@@ -17,15 +16,16 @@ export default function Showtime() {
     <div>
       <h2>Showtimes</h2>
 
-      {showtimes.length === 0 && <p>No showtimes available</p>}
+      {sessions.length === 0 && <p>No showtimes available</p>}
 
-      {showtimes.map((show) => (
-        <div key={show.id}>
+      {sessions.map(session => (
+        <div key={session.id}>
           <p>
             {new Date(show.start_time).toLocaleString()}
           </p>
+          <p>${session.price}</p>
 
-          <Link to={`/seats/${show.id}`}>
+          <Link to={`/sessions/${session.id}`}>
             Select Seats
           </Link>
         </div>

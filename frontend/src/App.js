@@ -5,7 +5,7 @@ import ProtectedRoute from "./auth/ProtectedRoute";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Movies from "./pages/Movies";
-import Showtimes from "./pages/Showtimes";
+import Showtime from "./pages/Showtime";
 import SeatSelection from "./pages/SeatSelection";
 import MyBookings from "./pages/MyBookings";
 import AdminDashboard from "./pages/AdminDashboard";
@@ -15,17 +15,21 @@ function App() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
+
+          {/* Public */}
           <Route path="/" element={<Movies />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
 
+          {/* Movie → Sessions */}
           <Route
-            path="/showtimes/:movieId"
-            element={<Showtimes />}
+            path="/movies/:movieId"
+            element={<Showtime />}
           />
 
+          {/* Seat Selection (Protected) */}
           <Route
-            path="/seats/:showtimeId"
+            path="/session/:sessionId"
             element={
               <ProtectedRoute>
                 <SeatSelection />
@@ -33,6 +37,7 @@ function App() {
             }
           />
 
+          {/* User Tickets */}
           <Route
             path="/my-bookings"
             element={
@@ -42,6 +47,7 @@ function App() {
             }
           />
 
+          {/* Admin */}
           <Route
             path="/admin"
             element={
@@ -50,6 +56,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+
         </Routes>
       </BrowserRouter>
     </AuthProvider>

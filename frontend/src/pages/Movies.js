@@ -1,23 +1,26 @@
 import { useEffect, useState } from "react";
-import api from "../api";
+import { apiFetch } from "../api";
 import { Link } from "react-router-dom";
 
 export default function Movies() {
   const [movies, setMovies] = useState([]);
 
   useEffect(() => {
-    api.get("/movies").then((res) => {
-      setMovies(res.data);
-    });
+    apiFetch("/movies")
+    .then(res => setMovies(res.data))
+    .catch(() => alert("Failed to load movies"));
   }, []);
 
   return (
     <div>
       <h2>Movies</h2>
+      {movies.length === 0 && <p> No movies available.</p>}
       {movies.map((movie) => (
         <div key={movie.id}>
           <h3>{movie.title}</h3>
-          <Link to={`/showtimes/${movie.id}`}>
+          <p>{movie.description}</p>
+          <p>Duration: {movie.duration_minutes} mins</p>
+          <Link to={`/movies/${movie.id}`}>
             View Showtimes
           </Link>
         </div>

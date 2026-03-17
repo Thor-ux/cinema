@@ -1,6 +1,6 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 class HallCreate(BaseModel):
-    name: str = Field(min_length=2)
-    rows: int = Field(gt=0)
-    cols: int = Field(gt=0)
+    name: str
+    rows: int
+    seats_per_row: int

@@ -1,34 +1,115 @@
 import { useEffect, useState } from "react";
-import api from "../api";
+import { apiFetch } from "../api";
 
-export default function MyTickets() {
-  const [tickets, setTickets] = useState([]);
+export default function AdminDashboard() {
+  const [sessions, setSessions] = useState([]);
+  const [bookings, setBookings] = useState([]);
+  const [form, setForm] = useState({
+    movie_id: "",
+    hall_id: "",
+    start_time: "",
+    price: ""
+  });
 
   useEffect(() => {
-    api.get("/tickets/me")
-      .then(res => setTickets(res.data))
-      .catch(() => alert("Failed to load tickets"));
+    loadData();
   }, []);
+
+  async function loadData() {
+    try {
+      const sessionsData = await apiFetch("/admin/sessions");
+      const bookingsData = await apiFetch("/admin/bookings");
+
+      setSessions(sessionsData);
+      setBookings(bookingsData);
+    } catch (err) {
+      alert(err.message);
+    }
+  }
+
+  async function createSession(e) {
+    e.preventDefault();
+
+    try {
+      await apiFetch("/admin/sessions", {
+        method: "POST",
+        body: JSON.stringify({
+          ...form,
+          movie_id: Number(form.movie_id),
+          hall_id: Number(form.hall_id),
+          price: Number(form.price)
+        })
+      });
+
+      alert("Session created");
+      loadData();
+    } catch (err) {
+      alert(err.message);
+    }
+  }
+
+  async function deleteSession(id) {
+    if (!window.confirm("Delete session?")) return;
+
+    try {
+      await apiFetch(`/admin/sessions/${id}`, {
+        method: "DELETE"
+      });
+
+      loadData();
+    } catch (err) {
+      alert(err.message);
+    }
+  }
 
   return (
     <div>
-      <h2>My Tickets</h2>
+      <h1>Admin Dashboard</h1>
 
-      {tickets.length === 0 && <p>No tickets purchased yet.</p>}
+      {/* CREATE SESSION */}
+      <h2>Create Session</h2>
+      <form onSubmit={createSession}>
+        <input
+          placeholder="Movie ID"
+          value={form.movie_id}
+          onChange={e => setForm({ ...form, movie_id: e.target.value })}
+        />
+        <input
+          placeholder="Hall ID"
+          value={form.hall_id}
+          onChange={e => setForm({ ...form, hall_id: e.target.value })}
+        />
+        <input
+          type="datetime-local"
+          value={form.start_time}
+          onChange={e => setForm({ ...form, start_time: e.target.value })}
+        />
+        <input
+          placeholder="Price"
+          value={form.price}
+          onChange={e => setForm({ ...form, price: e.target.value })}
+        />
+        <button type="submit">Create</button>
+      </form>
 
-      {tickets.map(ticket => (
-        <div key={ticket.id} style={{ marginBottom: "20px" }}>
-          <p><strong>Movie:</strong> {ticket.movie_title}</p>
-          <p><strong>Seat:</strong> {ticket.seat_number}</p>
-          <p><strong>Time:</strong> {new Date(ticket.start_time).toLocaleString()}</p>
+      {/* SESSIONS */}
+      <h2>Sessions</h2>
+      {sessions.map(s => (
+        <div key={s.id}>
+          <p>
+            Movie {s.movie_id} | Hall {s.hall_id} | {new Date(s.start_time).toLocaleString()}
+          </p>
+          <button onClick={() => deleteSession(s.id)}>Delete</button>
+        </div>
+      ))}
 
-          {ticket.qr_code && (
-            <img
-              src={`data:image/png;base64,${ticket.qr_code}`}
-              alt="QR Code"
-              width="150"
-            />
-          )}
+      {/* BOOKINGS */}
+      <h2>Bookings</h2>
+      {bookings.map(b => (
+        <div key={b.id}>
+          <p>
+            Booking #{b.id} | Session {b.session_id} | {b.customer_name}
+          </p>
         </div>
       ))}
     </div>

@@ -1,15 +1,17 @@
-import axios from "axios";
+const API_BASE = "http://localhost:8000";
 
-const api = axios.create({
-  baseURL: "http://localhost:8000",
-});
+export async function apiFetch(endpoint, options = {}) {
+    const response = await fetch(`${API_BASE}${endpoint}`, {
+        headers: {
+            "Content-Type": "application/json",
+        },
+        ...options,
+    });
 
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("token");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+    if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.detail || "API Error");
+    }
 
-export default api;
+    return response.json();
+}

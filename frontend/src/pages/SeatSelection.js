@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import api from "../api/axios";
+import api from "../api";
 
 export default function SeatSelection() {
   const { showtimeId } = useParams();

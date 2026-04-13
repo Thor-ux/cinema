@@ -1,10 +1,8 @@
-from pydantic_settings import BaseSettings
+import os
+from dotenv import load_dotenv
 
-class Settings(BaseSettings):
-    SECRET_KEY: str
-    DATABASE_URL: str
+load_dotenv()
 
-    class Config:
-        env_file = ".env"
-
-settings = Settings()
+SECRET_KEY = os.getenv("SECRET_KEY")
+ALGORITHM = os.getenv("ALGORITHM", "HS256")
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 60))

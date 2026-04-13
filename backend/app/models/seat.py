@@ -11,4 +11,4 @@ class Seat(Base):
 
     row = Column(Integer)
     number = Column(Integer)
-    type = Column(String, default="standard")
+    type = Column(String)

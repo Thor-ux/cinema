@@ -40,5 +40,9 @@ services:
     depends_on:
       - backend
 
+environment:
+  - SECRET_KEY=super_ultra_secure_key_123
+  - ALGORITHM=HS256
+
 volumes:
   cinema_data:

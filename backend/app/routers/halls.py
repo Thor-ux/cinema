@@ -14,7 +14,7 @@ router = APIRouter(tags=["Halls"])
 @router.post("/")
 def create_hall(data: HallCreate, db: Session = Depends(get_db)):
 
-    hall = CinemaHall(**data.dict())
+    hall = CinemaHall(**data.model_dump())
 
     db.add(hall)
     db.commit()
@@ -23,10 +23,14 @@ def create_hall(data: HallCreate, db: Session = Depends(get_db)):
     # generate seats
     for r in range(1, hall.rows + 1):
         for s in range(1, hall.seats_per_row + 1):
+
+            seat_type = "vip" if r <= hall.vip_rows else "standard"
+
             seat = Seat(
                 hall_id=hall.id,
                 row=r,
-                number=s
+                number=s,
+                type=seat_type
             )
             db.add(seat)
 
@@ -46,7 +50,7 @@ def update_hall(hall_id: int, data: HallCreate, db: Session = Depends(get_db)):
     if not hall:
         raise HTTPException(404, "Hall not found")
 
-    for key, value in data.dict().items():
+    for key, value in data.model_dump().items():
         setattr(hall, key, value)
 
     db.commit()

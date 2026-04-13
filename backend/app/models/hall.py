@@ -10,3 +10,4 @@ class CinemaHall(Base):
     rows = Column(Integer)
     seats_per_row = Column(Integer)
     is_active = Column(Boolean, default=True)
+    vip_rows = Column(Integer, default=0)

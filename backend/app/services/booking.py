@@ -5,6 +5,7 @@ from sqlalchemy import and_
 from app.models.booking import Booking
 from app.models.ticket import Ticket
 from app.models.seat import Seat
+from app.models.session import Session
 from app.utils.qr import generate_qr
 
 
@@ -47,12 +48,16 @@ def create_booking(db, data):
     tickets = []
 
     for seat in seats:
-        qr_content = f"""
-BOOKING:{booking_code}
-SESSION:{data.session_id}
-ROW:{getattr(seat, 'row', 'N/A')}
-SEAT:{seat.number}
-        """
+        qr_content = {
+    "booking_code": booking_code,
+    "session_id": data.session_id,
+    "movie_id": Session.movie_id,
+    "seat": {
+        "row": seat.row,
+        "number": seat.number,
+        "type": seat.type
+    },
+}
 
         qr = generate_qr(qr_content)
 

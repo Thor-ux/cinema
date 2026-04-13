@@ -6,7 +6,7 @@ from app.schemas.movie import MovieRead, MovieCreate
 from app.dependencies.db import get_db
 from app.dependencies.auth import get_current_admin
 
-router = APIRouter(tags=["Admin"])
+router = APIRouter(prefix="/admin", tags=["Admin"])
 
 @router.post("/movies", response_model=MovieRead)
 def create_movie(
@@ -14,7 +14,7 @@ def create_movie(
     db: Session = Depends(get_db),
     admin=Depends(get_current_admin)
 ):
-    movie = models.Movie(**data.dict())
+    movie = models.Movie(**data.model_dump())
 
     db.add(movie)
     db.commit()
@@ -23,7 +23,7 @@ def create_movie(
     return movie
 
 
-@router.put("/movies/{movie_id}")
+@router.put("/movies/{movie_id}", response_model=MovieRead)
 def update_movie(
     movie_id: int,
     data: MovieCreate,
@@ -35,6 +35,8 @@ def update_movie(
 
     if not movie:
         raise HTTPException(404, "Movie not found")
+    
+    update_data = data.model_dump(exclude_unset=True)
 
     for key, value in data.dict().items():
         setattr(movie, key, value)
@@ -78,7 +80,35 @@ def admin_dashboard(
     }
 
 @router.get("/bookings")
-def get_bookings(db: Session = Depends(get_db)):
+def get_bookings(
+    db: Session = Depends(get_db),
+    admin=Depends(get_current_admin)
+):
+    
     bookings = db.query(models.Booking).all()
 
-    return bookings
+    result = []
+
+    for booking in bookings:
+
+        session = booking.session
+        movie = session.movie
+
+        for ticket in booking.tickets:
+
+            seat = ticket.seat
+
+            result.append({
+                "booking_id": booking.id,
+                "booking_code": booking.booking_code,
+                "customer_name": booking.customer_name,
+
+                "movie_title": movie.title,
+                "session_time": session.start_time,
+
+                "seat_row": seat.row,
+                "seat_number": seat.number,
+                "seat_type": seat.type  
+            })
+
+    return result

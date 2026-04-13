@@ -1,5 +1,6 @@
 from sqlalchemy import Column, Integer, ForeignKey, DateTime, Float
 from app.database import Base
+from sqlalchemy.orm import relationship
 
 class Session(Base):
 
@@ -12,3 +13,5 @@ class Session(Base):
 
     start_time = Column(DateTime)
     price = Column(Float)
+
+movie = relationship("Movie")

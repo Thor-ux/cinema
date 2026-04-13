@@ -51,6 +51,7 @@ def get_session_seats(session_id: int, db: Session = Depends(get_db)):
             "id": seat.id,
             "row": seat.row,
             "number": seat.number,
+            "type": seat.type,
             "is_reserved": seat.id in booked_ids
         }
         for seat in seats
@@ -66,27 +67,11 @@ def create_session(data: SessionCreate, db: Session = Depends(get_db), admin=Dep
     if not hall:
         raise HTTPException(404, "Hall not found")
 
-    session = MovieSession(**data.dict())
+    session = MovieSession(**data.model_dump())
 
     db.add(session)
     db.commit()
-    db.refresh(session)
 
-    for r in range(1, hall.rows + 1):
-        for s in range(1, hall.seats_per_row + 1):
-
-            seat = Seat(
-                hall_id=hall.id,
-                session_id=session.id,
-                row=r,
-                number=s
-            )
-
-            db.add(seat)
-
-    db.commit()
-
-    return session
 
 @router.get("/admin/sessions")
 def get_sessions(db: Session = Depends(get_db), admin=Depends(get_current_admin)):
@@ -103,7 +88,7 @@ def update_session(session_id: int, data: SessionCreate, db: Session = Depends(g
     if not session:
         raise HTTPException(404, "Session not found")
 
-    for key, value in data.dict().items():
+    for key, value in data.model_dump().items():
         setattr(session, key, value)
 
     db.commit()

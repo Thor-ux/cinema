@@ -11,3 +11,4 @@ class Ticket(Base):
     qr_code = Column(String)
 
     booking = relationship("Booking", back_populates="tickets")
+    seat = relationship("Seat")

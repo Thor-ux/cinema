@@ -10,3 +10,4 @@ class Booking(Base):
     session_id = Column(Integer, ForeignKey("sessions.id"))
 
     tickets = relationship("Ticket", back_populates="booking")
+    sessions = relationship("Session")

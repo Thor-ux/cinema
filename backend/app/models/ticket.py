@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, Float
 from sqlalchemy.orm import relationship
 from app.database import Base
 
@@ -9,6 +9,7 @@ class Ticket(Base):
     booking_id = Column(Integer, ForeignKey("bookings.id"))
     seat_id = Column(Integer, ForeignKey("seats.id"))
     qr_code = Column(String)
+    price = Column(Float)
 
     booking = relationship("Booking", back_populates="tickets")
     seat = relationship("Seat")

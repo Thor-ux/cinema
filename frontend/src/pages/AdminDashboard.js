@@ -40,6 +40,10 @@ export default function AdminDashboard() {
           price: Number(form.price)
         })
       });
+      await apiFetch(`/admin/sessions/${id}/price`, {
+        method: "PATCH",
+        body: JSON.stringify({ price: newPrice })
+      });
 
       alert("Session created");
       loadData();
@@ -61,6 +65,7 @@ export default function AdminDashboard() {
       alert(err.message);
     }
   }
+
 
   return (
     <div>

@@ -21,7 +21,15 @@ def get_showtimes(movie_id: int, db: Session = Depends(get_db)):
         .all()
     )
 
-    return showtimes
+    return [
+        {
+            "id": s.id,
+            "start_time": s.start_time,
+            "price": s.price,
+            "hall_id": s.hall_id
+        }
+        for s in showtimes
+    ]
 
 @router.get("/sessions/{session_id}/seats")
 def get_session_seats(session_id: int, db: Session = Depends(get_db)):
@@ -109,3 +117,57 @@ def delete_session(session_id: int, db: Session = Depends(get_db), admin=Depends
     db.commit()
 
     return {"message": "Session deleted"}
+
+@router.patch("/admin/sessions/{session_id}/price")
+def update_session_price(
+    session_id: int,
+    price: float,
+    db: Session = Depends(get_db),
+    admin=Depends(get_current_admin)
+):
+    if price <= 0:
+        raise HTTPException(400, "Price must be positive")
+
+    session = db.query(MovieSession).filter(
+        MovieSession.id == session_id
+    ).first()
+
+    if not session:
+        raise HTTPException(404, "Session not found")
+
+    session.price = price
+    db.commit()
+
+    return {
+        "message": "Price updated",
+        "session_id": session_id,
+        "new_price": price
+    }
+
+@router.patch("/admin/sessions/price/bulk")
+def bulk_update_prices(
+    movie_id: int | None = None,
+    hall_id: int | None = None,
+    price: float = 0,
+    db: Session = Depends(get_db),
+    admin=Depends(get_current_admin)
+):
+    if price <= 0:
+        raise HTTPException(400, "Invalid price")
+
+    query = db.query(MovieSession)
+
+    if movie_id:
+        query = query.filter(MovieSession.movie_id == movie_id)
+
+    if hall_id:
+        query = query.filter(MovieSession.hall_id == hall_id)
+
+    sessions = query.all()
+
+    for s in sessions:
+        s.price = price
+
+    db.commit()
+
+    return {"updated": len(sessions)}

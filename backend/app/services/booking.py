@@ -48,6 +48,11 @@ def create_booking(db, data):
     tickets = []
 
     for seat in seats:
+
+        seat_price = Session.price
+
+        if seat.type == "vip":
+            seat_price *= 2.0 
         qr_content = {
     "booking_code": booking_code,
     "session_id": data.session_id,
@@ -64,7 +69,8 @@ def create_booking(db, data):
         ticket = Ticket(
             booking_id=booking.id,
             seat_id=seat.id,
-            qr_code=qr
+            qr_code=qr,
+            price=seat_price
         )
 
         db.add(ticket)

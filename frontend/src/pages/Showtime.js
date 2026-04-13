@@ -21,9 +21,9 @@ export default function Showtime() {
       {sessions.map(session => (
         <div key={session.id}>
           <p>
-            {new Date(show.start_time).toLocaleString()}
+            {new Date(showtime.start_time).toLocaleString()}
           </p>
-          <p>${session.price}</p>
+          <p>${showtime.price}</p>
 
           <Link to={`/sessions/${session.id}`}>
             Select Seats

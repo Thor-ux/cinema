@@ -2,41 +2,58 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 
 from app.dependencies.db import get_db
-from app.dependencies.auth import get_current_admin
 from app.models.hall import CinemaHall
 from app.models.seat import Seat
 from app.schemas.hall import HallCreate
 
-router = APIRouter(tags=["Halls"])
+router = APIRouter(prefix="/halls", tags=["Halls"])
 
-
-# Create hall
 @router.post("/")
-def create_hall(data: HallCreate, db: Session = Depends(get_db)):
+def create_hall(
+    data: HallCreate,
+    db: Session = Depends(get_db)
+):
 
-    hall = CinemaHall(**data.model_dump())
+    hall = CinemaHall(
+        name=data.name,
+        rows=data.rows,
+        seats_per_row=data.seats_per_row
+    )
 
     db.add(hall)
     db.commit()
     db.refresh(hall)
 
-    # generate seats
-    for r in range(1, hall.rows + 1):
-        for s in range(1, hall.seats_per_row + 1):
+    vip_set = {
+        (seat.row, seat.number)
+        for seat in data.vip_seats
+    }
 
-            seat_type = "vip" if r <= hall.vip_rows else "standard"
+    seats = []
+
+    for row in range(1, data.rows + 1):
+        for number in range(1, data.seats_per_row + 1):
+
+            seat_type = "vip" if (row, number) in vip_set else "standard"
 
             seat = Seat(
                 hall_id=hall.id,
-                row=r,
-                number=s,
+                row=row,
+                number=number,
                 type=seat_type
             )
-            db.add(seat)
 
+            seats.append(seat)
+
+    db.add_all(seats)
     db.commit()
 
-    return hall
+    return {
+        "message": "Hall created",
+        "hall_id": hall.id,
+        "total_seats": len(seats),
+        "vip_seats": len(vip_set)
+    }
 
 @router.get("/")
 def get_halls(db: Session = Depends(get_db)):
@@ -50,7 +67,7 @@ def update_hall(hall_id: int, data: HallCreate, db: Session = Depends(get_db)):
     if not hall:
         raise HTTPException(404, "Hall not found")
 
-    for key, value in data.model_dump().items():
+    for key, value in data.update_hall.items():
         setattr(hall, key, value)
 
     db.commit()

@@ -15,3 +15,8 @@ class Session(Base):
     price = Column(Float)
 
 movie = relationship("Movie")
+bookings = relationship(
+    "Booking",
+    back_populates="session",
+    cascade="all, delete"
+)

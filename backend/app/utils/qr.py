@@ -1,18 +1,23 @@
 import qrcode
-import uuid
 import base64
-import json
 from io import BytesIO
 
+def generate_qr(
+    booking_code: str,
+    movie_title: str,
+    session_id: int,
+    row: int,
+    seat_number: int,
+    seat_type: str,
+    price: float
+):
 
-def generate_qr(data: dict):
-
-    qr_content = json.dumps(data)
-
-    img = qrcode.make(qr_content)
-
-    buffer = BytesIO()
-
-    img.save(buffer, format="PNG")
-
-    return base64.b64encode(buffer.getvalue()).decode()
+    qr_content = f"""
+BOOKING_CODE:{booking_code}
+MOVIE:{movie_title}
+SESSION_ID:{session_id}
+ROW:{row}
+SEAT:{seat_number}
+TYPE:{seat_type}
+PRICE:{price}
+""".strip()

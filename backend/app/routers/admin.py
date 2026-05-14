@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 
 from app import models
 from app.schemas.movie import MovieRead, MovieCreate
+from app.schemas.user import UserRead
 from app.dependencies.db import get_db
 from app.dependencies.auth import get_current_admin
 
@@ -12,7 +13,7 @@ router = APIRouter(prefix="/admin", tags=["Admin"])
 def create_movie(
     data: MovieCreate,
     db: Session = Depends(get_db),
-    admin=Depends(get_current_admin)
+    admin: UserRead = Depends(get_current_admin)
 ):
     movie = models.Movie(**data.model_dump())
 
@@ -28,7 +29,7 @@ def update_movie(
     movie_id: int,
     data: MovieCreate,
     db: Session = Depends(get_db),
-    admin=Depends(get_current_admin)
+    admin: UserRead = Depends(get_current_admin)
 ):
 
     movie = db.query(models.Movie).filter(models.Movie.id == movie_id).first()
@@ -38,10 +39,11 @@ def update_movie(
     
     update_data = data.model_dump(exclude_unset=True)
 
-    for key, value in data.dict().items():
+    for key, value in update_data.items():
         setattr(movie, key, value)
 
     db.commit()
+    db.refresh(movie)
 
     return movie
 
@@ -50,7 +52,7 @@ def update_movie(
 def delete_movie(
     movie_id: int,
     db: Session = Depends(get_db),
-    admin=Depends(get_current_admin)
+    admin: UserRead = Depends(get_current_admin)
 ):
 
     movie = db.query(models.Movie).filter(models.Movie.id == movie_id).first()
@@ -66,7 +68,7 @@ def delete_movie(
 @router.get("/dashboard")
 def admin_dashboard(
     db: Session = Depends(get_db),
-    admin=Depends(get_current_admin)
+    admin: UserRead = Depends(get_current_admin)
 ):
 
     movies = db.query(models.Movie).count()
@@ -82,7 +84,7 @@ def admin_dashboard(
 @router.get("/bookings")
 def get_bookings(
     db: Session = Depends(get_db),
-    admin=Depends(get_current_admin)
+    admin: UserRead = Depends(get_current_admin)
 ):
     
     bookings = db.query(models.Booking).all()

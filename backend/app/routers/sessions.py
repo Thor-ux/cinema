@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.dependencies.db import get_db
 from app.dependencies.auth import get_current_admin
+from app.schemas.user import UserRead
 from app.models.session import Session as MovieSession
 from app.models.seat import Seat
 from app.models.hall import CinemaHall
@@ -66,7 +67,11 @@ def get_session_seats(session_id: int, db: Session = Depends(get_db)):
     ]
 
 @router.post("/admin/sessions")
-def create_session(data: SessionCreate, db: Session = Depends(get_db), admin=Depends(get_current_admin)):
+def create_session(
+    data: SessionCreate,
+    db: Session = Depends(get_db),
+    admin: UserRead = Depends(get_current_admin)
+):
 
     hall = db.query(CinemaHall).filter(
         CinemaHall.id == data.hall_id
@@ -78,7 +83,11 @@ def create_session(data: SessionCreate, db: Session = Depends(get_db), admin=Dep
     session = MovieSession(**data.model_dump())
 
     db.add(session)
+
     db.commit()
+    db.refresh(session)
+
+    return session
 
 
 @router.get("/admin/sessions")
@@ -123,7 +132,7 @@ def update_session_price(
     session_id: int,
     price: float,
     db: Session = Depends(get_db),
-    admin=Depends(get_current_admin)
+    admin: UserRead = Depends(get_current_admin)
 ):
     if price <= 0:
         raise HTTPException(400, "Price must be positive")
@@ -150,7 +159,7 @@ def bulk_update_prices(
     hall_id: int | None = None,
     price: float = 0,
     db: Session = Depends(get_db),
-    admin=Depends(get_current_admin)
+    admin: UserRead = Depends(get_current_admin)
 ):
     if price <= 0:
         raise HTTPException(400, "Invalid price")
